@@ -17,10 +17,10 @@ if [[ $(minikube status | grep -c "Running") == 0 ]]; then
 	minikube addons enable metrics-server
 	minikube addons enable ingress
 	minikube addons enable dashboard
-	echo "--> minikube started"
-	eval $(minikube docker-env)
-	docker build srcs/nginx/. -t nginx-image
-	kubectl create -f srcs/nginx/nginx.yaml
+#	echo "--> minikube started"
+#	eval $(minikube docker-env)
+#	docker build srcs/nginx/. -t nginx-image
+#	kubectl create -f srcs/nginx/nginx.yaml
 else
 	echo "--> minikube is already running"
 fi
