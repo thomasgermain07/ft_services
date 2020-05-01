@@ -4,6 +4,7 @@
 if [[ $1 == "stop" && $(minikube status | grep -c "Running") != 0 ]]; then
 	sh delete.sh
 	minikube stop
+	unset minikube_ip
 	echo "--> minikube has been stoped"
 	exit
 elif [[ $1 == "stop" ]]; then
@@ -26,4 +27,5 @@ else
 fi
 
 # Store the Ip address
-ip=$(minikube ip)
+export MINIKUBE_IP=$(minikube ip)
+echo $(minikube_ip)
