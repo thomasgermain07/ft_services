@@ -25,7 +25,7 @@ RUN touch /run/openrc/softlevel
 RUN mkdir -p /run/nginx
 
 # Open ports
-EXPOSE 80 443
+EXPOSE 80 443 22
 
 # Start nginx at the run
 #RUN rc-update add telegraf
