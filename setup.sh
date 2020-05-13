@@ -14,18 +14,21 @@ fi
 
 # Starting minikube
 if [[ $(minikube status | grep -c "Running") == 0 ]]; then 
-	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox --extra-config=apiserver.service-node-port-range=1-35000
+	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox --extra-config=apiserver.service-node-port-range=30000-32767
 	minikube addons enable metrics-server
 	minikube addons enable ingress
 	minikube addons enable dashboard
-#	echo "--> minikube started"
-#	eval $(minikube docker-env)
-#	docker build srcs/nginx/. -t nginx-image
-#	kubectl create -f srcs/nginx/nginx.yaml
+	echo "--> minikube started"
+	eval $(minikube docker-env)
+	export MINIKUBE_IP=$(minikube ip)
+	echo $MINIKUBE_IP
+	
+	# Building images below : 
+	docker build srcs/nginx/. -t nginx-image
+	
+	# Applying yamls below :
+	kubectl create -f srcs/nginx/nginx.yaml
+	kubectl apply -f srcs/ingress.yaml
 else
-	echo "--> minikube is already running"
+	echo "--> minikube is already running at $MINIKUBE_IP"
 fi
-
-# Store the Ip address
-export MINIKUBE_IP=$(minikube ip)
-echo $(minikube_ip)
