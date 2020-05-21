@@ -5,7 +5,7 @@ metadata:
   labels:
     app: nginx
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: nginx
   ports:
@@ -40,3 +40,7 @@ spec:
         imagePullPolicy: Never
         securityContext:
           privileged: true
+        ports:
+          - containerPort: 80
+          - containerPort: 443
+          - containerPort: 22

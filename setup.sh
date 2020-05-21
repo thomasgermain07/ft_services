@@ -1,10 +1,8 @@
-#! bin/bash
-
 # Stopping minikube
 if [[ $1 == "stop" && $(minikube status | grep -c "Running") != 0 ]]; then
 	sh delete.sh
 	minikube stop
-	unset minikube_ip
+	unset MINIKUBE_IP
 	echo "--> minikube has been stoped"
 	exit
 elif [[ $1 == "stop" ]]; then
@@ -19,16 +17,21 @@ if [[ $(minikube status | grep -c "Running") == 0 ]]; then
 	minikube addons enable ingress
 	minikube addons enable dashboard
 	echo "--> minikube started"
-	eval $(minikube docker-env)
-	export MINIKUBE_IP=$(minikube ip)
-	echo $MINIKUBE_IP
-	
-	# Building images below : 
-	docker build srcs/nginx/. -t nginx-image
-	
-	# Applying yamls below :
-	kubectl create -f srcs/nginx/nginx.yaml
-	kubectl apply -f srcs/ingress.yaml
 else
 	echo "--> minikube is already running at $MINIKUBE_IP"
 fi
+	eval $(minikube docker-env)
+	export MINIKUBE_IP=$(minikube ip)
+	echo $MINIKUBE_IP
+
+	#add minikube_ip to config files
+	echo "pasv_address=$MINIKUBE_IP" >> srcs/ftps/srcs/vsftpd.conf
+
+	# Building images below :
+	docker build srcs/nginx/. -t nginx-image
+	docker build srcs/ftps/. -t ftps-server
+
+	# Applying yamls below :
+	kubectl create -f srcs/nginx/nginx.yaml
+	kubectl apply -f srcs/ftps/ftps.yaml
+	kubectl apply -f srcs/ingress.yaml
