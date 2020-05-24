@@ -65,7 +65,6 @@ spec:
           privileged: true
         ports:
           - containerPort: 21
-          - containerPort: 20
           - containerPort: 30000
           - containerPort: 30001
           - containerPort: 30002

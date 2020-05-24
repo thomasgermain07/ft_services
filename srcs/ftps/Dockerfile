@@ -24,4 +24,4 @@ RUN echo "admin" | tee -a /etc/vsftpd/vsftpd.userlist
 
 #CMD service vsftpd start && service vsftpd status && sh
 CMD vsftpd /etc/vsftpd/vsftpd.conf
-EXPOSE 21 20 30000-30006
+EXPOSE 21 30000-30006
