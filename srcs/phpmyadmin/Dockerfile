@@ -1,13 +1,20 @@
 FROM alpine
 
-RUN apk add php7 php7-fpm php7-opcache php7-gd php7-mysqli php7-zlib php7-curl php7-mbstring \
-	php7-json php7-session openrc
+RUN apk update && apk upgrade && apk add php7 php7-fpm php7-opcache php7-gd php7-mysqli \
+		php7-zlib php7-curl php7-mbstring php7-json php7-session openrc
+RUN apk add telegraf --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
+# Fix open-rc warnings
 RUN openrc boot
+VOLUME [ "/sys/fs/cgroup" ]
 
-RUN mkdir var/www
-RUN mkdir var/www/phpmyadmin
+# Create the files for phpmyadmin files
+RUN mkdir -p var/www/phpmyadmin
+
+# Copy files to the container
 COPY srcs/phpmyadmin /var/www/phpmyadmin
+COPY srcs/telegraf.conf /etc/telegraf.conf.d/
+
+CMD service php-fpm7 start; service telegraf start; php -S 0.0.0.0:5000 -t var/www
 
 EXPOSE 5000
-CMD service php-fpm7 start; php -S 0.0.0.0:5000 -t var/www

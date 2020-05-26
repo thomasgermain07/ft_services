@@ -1,6 +1,8 @@
 # Stopping minikube
 if [[ $1 == "stop" && $(minikube status | grep -c "Running") != 0 ]]; then
-	sh delete.sh
+	kubectl delete service --all
+	kubectl delete deploy --all
+	kubectl delete persistentvolumeclaims --all
 	minikube stop
 	unset MINIKUBE_IP
 	echo "--> minikube has been stoped"
@@ -11,7 +13,7 @@ elif [[ $1 == "stop" ]]; then
 fi
 
 # Starting minikube
-if [[ $(minikube status | grep -c "Running") == 0 ]]; then 
+if [[ $(minikube status | grep -c "Running") == 0 ]]; then
 	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox --extra-config=apiserver.service-node-port-range=30000-32767
 	minikube addons enable metrics-server
 	minikube addons enable ingress
@@ -25,13 +27,23 @@ fi
 	echo $MINIKUBE_IP
 
 	#add minikube_ip to config files
-	echo "pasv_address=$MINIKUBE_IP" >> srcs/ftps/srcs/vsftpd.conf
+	sed -i '' '40d' srcs/ftps/srcs/vsftpd.conf | echo  "pasv_address=${MINIKUBE_IP}" >> srcs/ftps/srcs/vsftpd.conf
 
 	# Building images below :
-	docker build srcs/nginx/. -t nginx-image
-	docker build srcs/ftps/. -t ftps-server
+	docker build srcs/influxDB/. -t influxdb
+	docker build srcs/nginx/. -t nginx
+	docker build srcs/ftps/. -t ftps
+	docker build srcs/mysql/. -t mysql
+	docker build srcs/wordpress/. -t wordpress
+	docker build srcs/phpmyadmin/. -t phpmyadmin
 
 	# Applying yamls below :
-	kubectl create -f srcs/nginx/nginx.yaml
+	kubectl apply -f srcs/influxDB/influxdb.yaml
+	kubectl apply -f srcs/nginx/nginx.yaml
 	kubectl apply -f srcs/ftps/ftps.yaml
+	kubectl apply -f srcs/mysql/mysql.yaml
+	kubectl apply -f srcs/wordpress/wordpress.yaml
+	kubectl apply -f srcs/phpmyadmin/phpmyadmin.yaml
+
 	kubectl apply -f srcs/ingress.yaml
+

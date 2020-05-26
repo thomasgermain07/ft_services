@@ -1,18 +1,20 @@
 FROM alpine
 
-RUN apk add openrc mysql mysql-client
+RUN apk update && apk upgrade && apk add openrc mysql mysql-client
+RUN apk add telegraf --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+
+# Fix open-rc warnings
 RUN openrc boot
+VOLUME [ "/sys/fs/cgroup" ]
 
-# Copy conf
-COPY /srcs/my.cnf /etc/mysql/
+# Copy file to the container
+COPY srcs/my.cnf /etc/mysql/
+COPY srcs/telegraf.conf /etc/telegraf.conf.d/
+COPY srcs/script.sh /home
 
-# Copy script
-COPY /srcs/script.sh /home
-
+# Create the Volume for the base
 VOLUME ["/var/lib/mysql"]
 
+CMD service telegraf start; sh home/script.sh; tail -f /dev/null
+
 EXPOSE 3306
-
-CMD sh home/script.sh; tail -f /dev/null
-
-

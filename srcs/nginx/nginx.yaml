@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx-image
+        image: nginx
         imagePullPolicy: Never
         securityContext:
           privileged: true
