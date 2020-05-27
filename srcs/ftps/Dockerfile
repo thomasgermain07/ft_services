@@ -15,7 +15,6 @@ VOLUME [ "/sys/fs/cgroup" ]
 RUN adduser -D admin
 RUN echo "admin:test123" | chpasswd
 
-
 # Generating SSL files
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj '/C=FR/ST=75/L=Paris/O=42/CN=thgermai' -keyout /etc/ssl/private/key.pem -out /etc/ssl/private/cert.pem
 

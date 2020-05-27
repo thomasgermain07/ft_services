@@ -1,49 +1,106 @@
-# Stopping minikube
-if [[ $1 == "stop" && $(minikube status | grep -c "Running") != 0 ]]; then
-	kubectl delete service --all
-	kubectl delete deploy --all
-	kubectl delete persistentvolumeclaims --all
-	minikube stop
-	unset MINIKUBE_IP
-	echo "--> minikube has been stoped"
-	exit
-elif [[ $1 == "stop" ]]; then
-	echo "--> minikube is not running"
-	exit
-fi
+#!/bin/bash
 
-# Starting minikube
-if [[ $(minikube status | grep -c "Running") == 0 ]]; then
-	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox --extra-config=apiserver.service-node-port-range=30000-32767
-	minikube addons enable metrics-server
-	minikube addons enable ingress
-	minikube addons enable dashboard
-	echo "--> minikube started"
-else
-	echo "--> minikube is already running at $MINIKUBE_IP"
-fi
+	############################
+	# DELCARATION OF VARIABLES #
+	############################
+
+MINIKUBE_IP=""
+
+# FONT
+BOLD="\e[1m"
+
+# COLORS
+MSG="\e[97m" # WHITE
+SUCCESS="\e[32m" # GREEN
+WARNING="\e[93m" # YELLOW
+
+
+			############
+			# FUNCTION #
+			############
+
+printer() {
+	HEADER="\e[32mMINIKUBE: $(date +%T) ->\e[0m"
+	printf "$HEADER $1$2\n\e[0m"
+}
+
+image() {
 	eval $(minikube docker-env)
-	export MINIKUBE_IP=$(minikube ip)
-	echo $MINIKUBE_IP
+	if [[ $2 == "delete" ]]; then
+		printer $MSG "Deleting $1 in the cluster"
+		kubectl delete -f srcs/$1/$1.yaml >> .log
+		printer $MSG "Deleting image $1"
+		docker rmi -f $1 >> .log
+	else
+		printer $MSG "Building image $1"
+		docker build srcs/$1/. -t $1 >> .log
+		printer $MSG "Applying $1 in the cluster"
+		kubectl apply -f srcs/$1/$1.yaml >> .log
+	fi
+}
 
-	#add minikube_ip to config files
-	sed -i '' '40d' srcs/ftps/srcs/vsftpd.conf | echo  "pasv_address=${MINIKUBE_IP}" >> srcs/ftps/srcs/vsftpd.conf
+start_minikube() {
+	printer $MSG "Starting minikube"
+	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox &> .log
+	minikube addons enable metrics-server >> .log
+	minikube addons enable ingress >> .log
+	minikube addons enable dashboard >> .log
+	MINIKUBE_IP=$(minikube ip)
+	printer $SUCCESS "Minikube started with success"
+	printer $MSG "Running at: $BOLD$MINIKUBE_IP\n"
+}
 
-	# Building images below :
-	docker build srcs/influxDB/. -t influxdb
-	docker build srcs/nginx/. -t nginx
-	docker build srcs/ftps/. -t ftps
-	docker build srcs/mysql/. -t mysql
-	docker build srcs/wordpress/. -t wordpress
-	docker build srcs/phpmyadmin/. -t phpmyadmin
+stop_minikube() {
+	printer $MSG "Stopping minikube"
+	printer $MSG "Deleting services, deploys, volumes and ingress"
+	image influxdb delete
+	image mysql delete
+	image ftps delete
+	image nginx delete
+	image phpmyadmin delete
+	image wordpress delete
+	kubectl delete -f srcs/ingress.yaml
+	MINIKUBE_IP=""
+	minikube stop 2>&1 >> .log
+	printer $MSG "Minikube stopped"
+	rm -f .log
+	exit
+}
 
-	# Applying yamls below :
-	kubectl apply -f srcs/influxDB/influxdb.yaml
-	kubectl apply -f srcs/nginx/nginx.yaml
-	kubectl apply -f srcs/ftps/ftps.yaml
-	kubectl apply -f srcs/mysql/mysql.yaml
-	kubectl apply -f srcs/wordpress/wordpress.yaml
-	kubectl apply -f srcs/phpmyadmin/phpmyadmin.yaml
 
-	kubectl apply -f srcs/ingress.yaml
+	###########################
+	# MAIN PART OF THE SCRIPT #
+	###########################
 
+###### Test section
+
+#######
+
+if [[ $1 == stop && $(minikube status | grep -c "Running") != 0 ]]; then
+	stop_minikube
+elif [[ $1 == stop ]]; then
+	printer $WARNING "Minikube is not running"
+	exit
+fi
+
+printer $SUCCESS $BOLD"WELCOME TO FT_SERVICES\n"
+if [[ $(minikube status | grep -c "Running") == 0 ]]; then
+	start_minikube
+else
+	MINIKUBE_IP=$(minikube ip)
+	printer $WARNING "Minikube is already running at: $BOLD$MSG$MINIKUBE_IP"
+fi
+
+#add minikube_ip to config files
+sed -i '' '40d' srcs/ftps/srcs/vsftpd.conf | echo  "pasv_address=${MINIKUBE_IP}" >> srcs/ftps/srcs/vsftpd.conf
+
+# Builing images
+image influxdb
+image mysql
+image ftps
+image nginx
+image phpmyadmin
+image wordpress
+
+printer $MSG "Applying ingress in the cluster"
+kubectl apply -f srcs/ingress.yaml >> .log
