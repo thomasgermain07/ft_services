@@ -59,8 +59,9 @@ stop_minikube() {
 	image nginx delete
 	image phpmyadmin delete
 	image wordpress delete
-	kubectl delete -f srcs/ingress.yaml
-	MINIKUBE_IP=""
+	image grafana delete
+	printer $MSG "Deleting ingress in the cluster"
+	kubectl delete -f srcs/ingress.yaml >> .log
 	minikube stop 2>&1 >> .log
 	printer $MSG "Minikube stopped"
 	rm -f .log
@@ -71,10 +72,6 @@ stop_minikube() {
 	###########################
 	# MAIN PART OF THE SCRIPT #
 	###########################
-
-###### Test section
-
-#######
 
 if [[ $1 == stop && $(minikube status | grep -c "Running") != 0 ]]; then
 	stop_minikube
@@ -91,8 +88,9 @@ else
 	printer $WARNING "Minikube is already running at: $BOLD$MSG$MINIKUBE_IP"
 fi
 
-#add minikube_ip to config files
+# Add minikube_ip to config files
 sed -i '' '40d' srcs/ftps/srcs/vsftpd.conf | echo  "pasv_address=${MINIKUBE_IP}" >> srcs/ftps/srcs/vsftpd.conf
+sed "s/ip_minikube/$MINIKUBE_IP/g" srcs/mysql/srcs/.origin.sql > srcs/mysql/srcs/wordpress.sql
 
 # Builing images
 image influxdb
@@ -101,6 +99,11 @@ image ftps
 image nginx
 image phpmyadmin
 image wordpress
+image grafana
+
+sleep 5
 
 printer $MSG "Applying ingress in the cluster"
 kubectl apply -f srcs/ingress.yaml >> .log
+
+

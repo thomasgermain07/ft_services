@@ -7,6 +7,8 @@ RUN apk add telegraf --repository http://dl-3.alpinelinux.org/alpine/edge/testin
 VOLUME [ "/sys/fs/cgroup" ]
 RUN openrc boot
 
+# Create the volume for the base
+
 # Create and copy needed files
 RUN mkdir /etc/influxdb /etc/telegraf
 COPY srcs/influxdb.conf /etc/influxdb/influxdb.conf

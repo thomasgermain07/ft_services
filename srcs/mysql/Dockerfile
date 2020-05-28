@@ -11,8 +11,9 @@ VOLUME [ "/sys/fs/cgroup" ]
 COPY srcs/my.cnf /etc/mysql/
 COPY srcs/telegraf.conf /etc/telegraf.conf.d/
 COPY srcs/script.sh /home
+COPY srcs/wordpress.sql /home/
 
-# Create the Volume for the base
+# Create the volume for the base
 VOLUME ["/var/lib/mysql"]
 
 CMD service telegraf start; sh home/script.sh; tail -f /dev/null

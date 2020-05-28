@@ -18,3 +18,7 @@ spec:
           backend:
             serviceName: phpmyadmin
             servicePort: 5000
+        - path: /grafana/
+          backend:
+            serviceName: grafana
+            servicePort: 3000
