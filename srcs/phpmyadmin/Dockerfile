@@ -12,6 +12,7 @@ VOLUME [ "/sys/fs/cgroup" ]
 RUN mkdir -p var/www/phpmyadmin
 
 # Copy files to the container
+COPY srcs/index.html /var/www
 COPY srcs/phpmyadmin /var/www/phpmyadmin
 COPY srcs/telegraf.conf /etc/telegraf.conf.d/
 

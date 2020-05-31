@@ -12,6 +12,7 @@ VOLUME [ "/sys/fs/cgroup" ]
 RUN mkdir -p /var/www/wordpress
 
 # Copy files to the container
+COPY srcs/index.html /var/www/
 COPY srcs/wordpress /var/www/wordpress
 COPY srcs/telegraf.conf /etc/telegraf.conf.d/
 

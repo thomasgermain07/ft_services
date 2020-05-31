@@ -5,7 +5,7 @@ RUN apk update && apk upgrade && apk add nginx sudo openssh php7-fpm openssl ope
 RUN apk add telegraf --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
 # Replacing the default config
-COPY srcs/index.html /var/lib/nginx/index.html
+COPY srcs/redirection /var/lib/nginx/redirection
 RUN rm -f /etc/nginx/init.d/default.conf
 COPY srcs/default.conf /etc/nginx/conf.d/
 COPY srcs/telegraf.conf /etc/telegraf.conf.d/telegraf.conf

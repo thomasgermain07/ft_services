@@ -41,7 +41,7 @@ image() {
 
 start_minikube() {
 	printer $MSG "Starting minikube"
-	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox &> .log
+	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox --extra-config=apiserver.service-node-port-range=1-35000 &> .log
 	minikube addons enable metrics-server >> .log
 	minikube addons enable ingress >> .log
 	minikube addons enable dashboard >> .log
@@ -62,6 +62,8 @@ stop_minikube() {
 	image grafana delete
 	printer $MSG "Deleting ingress in the cluster"
 	kubectl delete -f srcs/ingress.yaml >> .log
+	printer $MSG "Waiting for all pods to stop"
+	kubectl delete pods --all >> .log
 	minikube stop 2>&1 >> .log
 	printer $MSG "Minikube stopped"
 	rm -f .log

@@ -5,13 +5,14 @@ metadata:
   labels:
     app: wordpress
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: wordpress
   ports:
     - name: main-port
       port: 5050
       targetPort: 5050
+      nodePort: 5050
 ---
 apiVersion: apps/v1
 kind: Deployment
