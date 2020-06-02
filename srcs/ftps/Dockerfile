@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk update && apk upgrade && apk add vsftpd openrc openssl
+RUN apk update && apk upgrade && apk add openrc vsftpd openssl
 RUN apk add telegraf --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
 # Copy files to containers
@@ -9,7 +9,7 @@ COPY srcs/telegraf.conf /etc/telegraf.conf.d/
 
 # Fix open-rc warnings
 RUN openrc boot
-VOLUME [ "/sys/fs/cgroup" ]
+VOLUME ["/sys/fs/cgroup"]
 
 # Creating user
 RUN adduser -D admin
@@ -27,6 +27,8 @@ RUN mkdir /home/admin/ftp/files
 RUN chown admin:admin /home/admin/ftp/files
 RUN echo "admin" | tee -a /etc/vsftpd/vsftpd.userlist
 
-CMD service telegraf start; vsftpd /etc/vsftpd/vsftpd.conf
+COPY srcs/script.sh /home/
+RUN chmod +x /home/script.sh
+CMD service telegraf start; sh /home/script.sh
 
 EXPOSE 21 30000-30006

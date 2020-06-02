@@ -1,8 +1,13 @@
 FROM alpine
 
 # Install all needed
-RUN apk update && apk upgrade && apk add nginx sudo openssh php7-fpm openssl openrc
+RUN apk update && apk upgrade && apk add openrc php7-fpm nginx sudo openssh openssl
 RUN apk add telegraf --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+
+# Fix open-rc warnings
+RUN openrc boot
+RUN touch /run/openrc/softlevel
+VOLUME ["/sys/fs/cgroup"]
 
 # Replacing the default config
 COPY srcs/redirection /var/lib/nginx/redirection
@@ -19,10 +24,6 @@ RUN adduser -D -u 1000 "admin"
 RUN echo "admin:admin123" | chpasswd
 COPY srcs/sudoers.dist /etc/sudoers
 
-# Booting openrc
-RUN openrc boot
-RUN touch /run/openrc/softlevel
-
 # Create the file for running nginx
 RUN mkdir -p /run/nginx
 
@@ -30,4 +31,6 @@ RUN mkdir -p /run/nginx
 EXPOSE 80 443 22
 
 # Start nginx at the run
-CMD service php-fpm7 start; service telegraf start; service sshd start; nginx -g "daemon off;"
+COPY srcs/script.sh /home
+RUN chmod +x /home/script.sh
+CMD service telegraf start; service php-fpm7 start; service sshd start; service nginx start; sh /home/script.sh

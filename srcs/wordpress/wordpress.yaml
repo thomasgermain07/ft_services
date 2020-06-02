@@ -33,7 +33,11 @@ spec:
       - name: wordpress
         image: wordpress
         imagePullPolicy: Never
-        securityContext:
-          privileged: true
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5050
+          initialDelaySeconds: 30
+          periodSeconds: 3
         ports:
-          - containerPort: 5050
+        - containerPort: 5050

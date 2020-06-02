@@ -9,7 +9,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 3Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,6 +30,11 @@ spec:
       - name: mysql
         image: mysql
         imagePullPolicy: Never
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 15
+          periodSeconds: 3
         ports:
         - containerPort: 3306
         volumeMounts:

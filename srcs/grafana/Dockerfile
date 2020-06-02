@@ -9,13 +9,17 @@ RUN tar -zxvf grafana-6.6.0.linux-amd64.tar.gz && rm /grafana-6.6.0/conf/default
 
 # Fix open-rc warnings
 RUN openrc boot
-VOLUME [ "/sys/fs/cgroup" ]
+VOLUME ["/sys/fs/cgroup"]
 
 # Copy files to the container
+RUN mkdir -p /var/lib/grafana/dashboards
+COPY srcs/grafana.db /grafana-6.6.0/data/
+COPY srcs/default.json /var/lib/grafana/dashboards/
 COPY srcs/telegraf.conf /etc/telegraf.conf.d/
 COPY srcs/defaults.ini /grafana-6.6.0/conf/
 
-# GRAFANA DASHBOARD CODE = 5955
-CMD service telegraf start; cd /grafana-6.6.0/bin/; ./grafana-server
+COPY srcs/script.sh /home/
+RUN chmod +x /home/script.sh
+CMD service telegraf start; sh /home/script.sh
 
 EXPOSE 3000

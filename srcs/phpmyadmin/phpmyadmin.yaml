@@ -31,5 +31,11 @@ spec:
       - name: phpmyadmin
         image: phpmyadmin
         imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 3
         ports:
         - containerPort: 5000

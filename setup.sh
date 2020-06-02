@@ -108,4 +108,9 @@ sleep 5
 printer $MSG "Applying ingress in the cluster"
 kubectl apply -f srcs/ingress.yaml >> .log
 
-
+printer $MSG "Waiting ingress to get ready\n"
+while [ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]
+do
+	sleep 3
+done
+printer $SUCCESS "Everything is good to go !!"
