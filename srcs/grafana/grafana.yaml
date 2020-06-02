@@ -32,5 +32,11 @@ spec:
       - name: grafana
         image: grafana
         imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 3
+          periodSeconds: 3
         ports:
         - containerPort: 3000

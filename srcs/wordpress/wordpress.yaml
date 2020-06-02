@@ -11,8 +11,8 @@ spec:
   ports:
     - name: main-port
       port: 5050
-      targetPort: 5050
       nodePort: 5050
+      protocol: TCP
 ---
 apiVersion: apps/v1
 kind: Deployment

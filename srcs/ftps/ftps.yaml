@@ -63,6 +63,11 @@ spec:
         imagePullPolicy: Never
         securityContext:
           privileged: true
+        livenessProbe:
+          tcpSocket:
+            port: 21
+          initialDelaySeconds: 15
+          periodSeconds: 3
         ports:
           - containerPort: 21
           - containerPort: 30000

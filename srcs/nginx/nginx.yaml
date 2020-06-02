@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: nginx
+  name: nginx-nodeport
 spec:
   type: NodePort
   selector:
@@ -47,12 +47,12 @@ spec:
         imagePullPolicy: Never
         securityContext:
           privileged: true
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 443
-          initialDelaySeconds: 15
-          periodSeconds: 3
+        # livenessProbe:
+        #   httpGet:
+        #     path: /
+        #     port: 443
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 3
         ports:
         - containerPort: 80
         - containerPort: 443

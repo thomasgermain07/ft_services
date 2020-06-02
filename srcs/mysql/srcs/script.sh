@@ -8,6 +8,8 @@ mysql -u root -e "GRANT ALL PRIVILEGES ON * . * TO 'root'@'%' WITH GRANT OPTION"
 mysql -u root -e "FLUSH PRIVILEGES"
 mysql -u root  wordpress < /home/wordpress.sql
 
+sleep 20
+
 while [ 1 ]
 do
 	sleep 5

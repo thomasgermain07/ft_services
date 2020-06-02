@@ -94,6 +94,18 @@ fi
 sed -i '' '40d' srcs/ftps/srcs/vsftpd.conf | echo  "pasv_address=${MINIKUBE_IP}" >> srcs/ftps/srcs/vsftpd.conf
 sed "s/ip_minikube/$MINIKUBE_IP/g" srcs/mysql/srcs/.origin.sql > srcs/mysql/srcs/wordpress.sql
 
+printer $MSG "Applying ingress in the cluster"
+kubectl apply -f srcs/ingress.yaml >> .log
+
+if  [[ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]]; then
+	printer $MSG "Waiting ingress to get ready\n"
+else
+	while [ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]
+	do
+		sleep 3
+	done
+fi
+
 # Builing images
 image influxdb
 image mysql
@@ -103,14 +115,6 @@ image phpmyadmin
 image wordpress
 image grafana
 
-sleep 5
-
-printer $MSG "Applying ingress in the cluster"
-kubectl apply -f srcs/ingress.yaml >> .log
-
-printer $MSG "Waiting ingress to get ready\n"
-while [ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]
-do
-	sleep 3
-done
+sleep 3
+echo ""
 printer $SUCCESS "Everything is good to go !!"

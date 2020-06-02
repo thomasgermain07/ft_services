@@ -5,6 +5,8 @@ sleep 2
 influx -execute "CREATE USER admin WITH PASSWORD 'test123' WITH ALL PRIVILEGES"
 service telegraf start
 
+sleep 20
+
 while [ 1 ]
 do
 	sleep 5
