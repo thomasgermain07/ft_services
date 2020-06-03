@@ -41,7 +41,7 @@ image() {
 
 start_minikube() {
 	printer $MSG "Starting minikube"
-	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=virtualbox --extra-config=apiserver.service-node-port-range=1-35000 &> .log
+	minikube start --cpus=2 --memory=4096 --disk-size=8000mb --vm-driver=docker --extra-config=apiserver.service-node-port-range=1-35000 &> .log
 	minikube addons enable metrics-server >> .log
 	minikube addons enable ingress >> .log
 	minikube addons enable dashboard >> .log
@@ -91,20 +91,9 @@ else
 fi
 
 # Add minikube_ip to config files
-sed -i '' '40d' srcs/ftps/srcs/vsftpd.conf | echo  "pasv_address=${MINIKUBE_IP}" >> srcs/ftps/srcs/vsftpd.conf
+sed -i '40d' srcs/ftps/srcs/vsftpd.conf | echo  "pasv_address=${MINIKUBE_IP}" >> srcs/ftps/srcs/vsftpd.conf
 sed "s/ip_minikube/$MINIKUBE_IP/g" srcs/mysql/srcs/.origin.sql > srcs/mysql/srcs/wordpress.sql
-
-printer $MSG "Applying ingress in the cluster"
-kubectl apply -f srcs/ingress.yaml >> .log
-
-if  [[ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]]; then
-	printer $MSG "Waiting ingress to get ready\n"
-else
-	while [ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]
-	do
-		sleep 3
-	done
-fi
+sed "s/MINIKUBE/$MINIKUBE_IP/g" srcs/wordpress/srcs/.script_origin.sh > srcs/wordpress/srcs/script.sh
 
 # Builing images
 image influxdb
@@ -117,4 +106,18 @@ image grafana
 
 sleep 3
 echo ""
+
+printer $MSG "Applying ingress in the cluster"
+kubectl apply -f srcs/ingress.yaml >> .log
+
+if [[ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]]; then
+	while  [ $(kubectl get ing | grep -c $MINIKUBE_IP) != 1 ]
+	do
+		printer $MSG "Waiting ingress to get ready..."
+		sleep 5
+	done
+fi
+
+echo""
+
 printer $SUCCESS "Everything is good to go !!"
